@@ -1,0 +1,7 @@
+Flask
+Flask-Mail
+bcrypt
+PyJWT
+pymysql
+pymysqlpool
+Pillow
