@@ -1,5 +1,5 @@
 from flask import Blueprint, send_from_directory, make_response, jsonify, request
-import sqlite3
+import pymysql
 import bcrypt
 import jwt
 import secrets
@@ -8,6 +8,7 @@ from flask_mail import Message
 from appmain import app, mail
 
 from appmain.utils import verifyJWT, getJWTContent
+from appmain.db import MYSQL_CONFIG, get_connection
 
 user = Blueprint('user', __name__)
 
@@ -25,11 +26,11 @@ def register():
 
     hashedPW = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
 
-    conn = sqlite3.connect('pyBook.db')
+    conn = get_connection()
     cursor = conn.cursor()
 
     if cursor:
-        SQL = 'INSERT INTO users (username, email, passwd) VALUES (?, ?, ?)'
+        SQL = 'INSERT INTO users (username, email, passwd) VALUES (%s, %s, %s)'
         cursor.execute(SQL, (username, email, hashedPW))
         conn.commit()
 
@@ -57,13 +58,13 @@ def getAuth():
     email = data.get("email")
     passwd = data.get("passwd")
 
-    conn = sqlite3.connect('pyBook.db')
+    conn = get_connection()
     cursor = conn.cursor()
 
     payload = {"authenticated": False, "email": '', "username": '', "authtoken": ''}
 
     if cursor:
-        SQL = 'SELECT id, username, passwd FROM users WHERE email=?'
+        SQL = 'SELECT id, username, passwd FROM users WHERE email=%s'
         cursor.execute(SQL, (email,))
         result = cursor.fetchone()
 
@@ -77,7 +78,7 @@ def getAuth():
         if pwMatch:
             authkey = secrets.token_hex(16)
 
-            SQL = 'UPDATE users SET authkey=? WHERE id=?'
+            SQL = 'UPDATE users SET authkey=%s WHERE id=%s'
             cursor.execute(SQL, (authkey, id))
             conn.commit()
 
@@ -114,11 +115,11 @@ def getMyInfo():
             token = getJWTContent(authToken)
             email = token["email"]
 
-            conn = sqlite3.connect('pyBook.db')
+            conn = get_connection()
             cursor = conn.cursor()
 
             if cursor:
-                SQL = 'SELECT username FROM users WHERE email=?'
+                SQL = 'SELECT username FROM users WHERE email=%s'
                 cursor.execute(SQL, (email,))
                 username = cursor.fetchone()[0]
                 cursor.close()
@@ -152,15 +153,15 @@ def updateMyInfo():
 
             hashedPW = bcrypt.hashpw(passwd.encode('utf-8'), bcrypt.gensalt())
 
-            conn = sqlite3.connect('pyBook.db')
+            conn = get_connection()
             cursor = conn.cursor()
 
             if cursor:
                 if passwd:
-                    SQL = 'UPDATE users SET username=?, passwd=? WHERE email=?'
+                    SQL = 'UPDATE users SET username=%s, passwd=%s WHERE email=%s'
                     cursor.execute(SQL, (username, hashedPW, email))
                 else:
-                    SQL = 'UPDATE users SET username=? WHERE email=?'
+                    SQL = 'UPDATE users SET username=%s WHERE email=%s'
                     cursor.execute(SQL, (username, email))
                 conn.commit()
 
@@ -188,11 +189,11 @@ def checkAndSendNewPW():
 
     payload = {"success": False}
 
-    conn = sqlite3.connect('pyBook.db')
+    conn = get_connection()
     cursor = conn.cursor()
 
     if cursor:
-        SQL = 'SELECT id FROM users WHERE email=?'
+        SQL = 'SELECT id FROM users WHERE email=%s'
         cursor.execute(SQL, (email,))
         result = cursor.fetchone()
 
@@ -201,7 +202,7 @@ def checkAndSendNewPW():
             randPW = secrets.token_hex(8)
             hashedPW = bcrypt.hashpw(randPW.encode('utf-8'), bcrypt.gensalt())
 
-            SQL = 'UPDATE users SET passwd=? WHERE id=?'
+            SQL = 'UPDATE users SET passwd=%s WHERE id=%s'
             cursor.execute(SQL, (hashedPW, id))
             conn.commit()
 

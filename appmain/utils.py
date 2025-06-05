@@ -3,9 +3,10 @@ import secrets
 from PIL import Image
 
 import jwt
-import sqlite3
+import pymysql
 
 from appmain import app
+from appmain.db import MYSQL_CONFIG, get_connection
 
 def verifyJWT(token):
     if token is None:
@@ -14,11 +15,11 @@ def verifyJWT(token):
         try:
             decodedToken = jwt.decode(token, app.config["SECRET_KEY"], algorithms="HS256")
             if decodedToken:
-                conn = sqlite3.connect('pyBook.db')
+                conn = get_connection()
                 cursor = conn.cursor()
 
                 if cursor:
-                    SQL = 'SELECT authkey FROM users WHERE email=?'
+                    SQL = 'SELECT authkey FROM users WHERE email=%s'
                     cursor.execute(SQL, (decodedToken["email"],))
                     authkey = cursor.fetchone()[0]
                     cursor.close()
