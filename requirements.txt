@@ -4,3 +4,6 @@ bcrypt
 PyJWT
 pymysql
 Pillow
+DBUtils>=3.1.1
+requests
+bs4

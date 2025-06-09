@@ -6,7 +6,7 @@ import jwt
 import pymysql
 
 from appmain import app
-from appmain.db import MYSQL_CONFIG, get_connection
+from appmain.db import get_connection
 
 def verifyJWT(token):
     if token is None:

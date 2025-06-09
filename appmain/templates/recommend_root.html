@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>추천 루트 - BusETA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="mb-4 text-center">🚀 지금 가장 빠른 등교 방법</h2>
+
+    <!-- 사용자 설정 목적지 요약 -->
+    <div class="alert alert-info text-center" role="alert">
+      설정된 목적지: <strong>삼송역</strong><br />
+      기준 시간: <span id="current-time"></span>
+    </div>
+
+    <!-- 추천 루트 결과 -->
+    <div class="card">
+      <div class="card-header">
+        ✅ 추천 경로
+      </div>
+      <div class="card-body">
+        <h5 class="card-title">033번 버스 탑승</h5>
+        <p class="card-text">
+          5분 후 정류장 도착 예정<br />
+          삼송역까지 18분 소요 예상<br />
+          현재 혼잡도: 보통
+        </p>
+        <a href="/bus_info" class="btn btn-outline-primary">버스 상세 보기</a>
+      </div>
+    </div>
+
+    <!-- 대안 루트 -->
+    <div class="mt-4">
+      <h5>🔁 대안 경로</h5>
+      <ul class="list-group">
+        <li class="list-group-item">
+          백석역 셔틀버스 (출발까지 14분) → 백석역 도착까지 23분
+        </li>
+        <li class="list-group-item">
+          택시/카풀 (예상 시간: 15분, 비용: 6,000원)
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // 현재 시각 출력
+    const now = new Date();
+    document.getElementById("current-time").innerText = now.toLocaleTimeString("ko-KR");
+  </script>
+  <script src="/static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

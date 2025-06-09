@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>노선버스 정보 - BusETA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="mb-4 text-center">🚌 노선버스 도착 정보</h2>
+
+    <!-- 기본 버스 정보 -->
+    <div class="mb-4">
+      <h4>자주 이용하는 버스</h4>
+      <ul class="list-group">
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          033번 버스
+          <span class="badge bg-primary rounded-pill">도착까지 5분</span>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          85번 버스
+          <span class="badge bg-success rounded-pill">도착까지 7분</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- 사용자 설정 버스 -->
+    <div class="mb-4">
+      <h4>내가 설정한 버스</h4>
+      <ul class="list-group" id="user-bus-list">
+        <!-- 여기에 JavaScript로 동적 추가 -->
+      </ul>
+    </div>
+
+    <!-- 추가 입력 폼 -->
+    <div class="mb-3">
+      <label for="busInput" class="form-label">버스 번호 추가</label>
+      <input type="text" class="form-control" id="busInput" placeholder="예: 600, 773">
+      <button class="btn btn-outline-primary mt-2" onclick="addBus()">추가</button>
+    </div>
+  </div>
+
+  <script src="/static/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // 예시: 사용자 버스 동적 추가
+    function addBus() {
+      const input = document.getElementById("busInput");
+      const busNum = input.value.trim();
+      if (busNum) {
+        const list = document.getElementById("user-bus-list");
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `${busNum}번 버스 <span class="badge bg-secondary rounded-pill">정보 불러오는 중</span>`;
+        list.appendChild(li);
+        input.value = "";
+      }
+    }
+  </script>
+</body>
+</html>

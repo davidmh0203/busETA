@@ -8,7 +8,7 @@ from flask_mail import Message
 from appmain import app, mail
 
 from appmain.utils import verifyJWT, getJWTContent
-from appmain.db import MYSQL_CONFIG, get_connection
+from appmain.db import get_connection
 
 user = Blueprint('user', __name__)
 
@@ -69,9 +69,9 @@ def getAuth():
         result = cursor.fetchone()
 
         if result:
-            pwMatch = bcrypt.checkpw(passwd.encode('utf-8'), result[2])
-            id = result[0]
-            username = result[1]
+            pwMatch = bcrypt.checkpw(passwd.encode('utf-8'), result["passwd"])
+            id = result["id"]
+            username = result["username"]
         else:
             pwMatch = None
 

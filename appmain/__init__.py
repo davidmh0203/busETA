@@ -23,3 +23,12 @@ app.register_blueprint(main)
 
 from appmain.user.routes import user
 app.register_blueprint(user)
+
+from appmain.shuttle.routes import shuttle
+app.register_blueprint(shuttle)
+
+from appmain.routeBus.routes import routeBus
+app.register_blueprint(routeBus)
+
+from appmain.recommend.routes import recommend
+app.register_blueprint(recommend)

@@ -1,15 +1,18 @@
-import os
 import pymysql
+from dbutils.pooled_db import PooledDB
+from pymysql import cursors
 
-MYSQL_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": int(os.getenv("DB_PORT", 3306)),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""),
-    "database": os.getenv("DB_NAME", "pyBook"),
-    "cursorclass": pymysql.cursors.Cursor
-}
 
+POOL = PooledDB(
+    creator=pymysql,
+    maxconnections=5,
+    blocking=True,
+    host='localhost',
+    user='root',
+    password='12341234',
+    database='bus_eta',
+    cursorclass=pymysql.cursors.DictCursor
+)
 
 def get_connection():
-    return pymysql.connect(**MYSQL_CONFIG)
+    return POOL.connection()

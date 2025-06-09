@@ -1,5 +1,5 @@
 import pymysql
-from appmain.db import MYSQL_CONFIG, get_connection
+from appmain.db import get_connection
 
 # Create users table if it does not exist
 conn = get_connection()

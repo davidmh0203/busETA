@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>셔틀버스 정보 - BusETA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">🚌 셔틀버스 정보</h2>
+
+    <!-- 시간 기준 안내 -->
+    <div class="alert alert-secondary text-center" role="alert">
+      현재 시간: <strong id="current-time"></strong><br />
+      가장 가까운 셔틀을 추천합니다.
+    </div>
+
+    <!-- 셔틀 정보 테이블 -->
+    <table class="table table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>방향</th>
+          <th>출발 시각</th>
+          <th>출발까지 남은 시간</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody id="shuttle-table-body">
+        <!-- JavaScript로 동적 삽입 -->
+      </tbody>
+    </table>
+
+    <!-- 안내 -->
+    <div class="text-muted mt-3">
+      ※ 시간은 매월 학교 공지 기준으로 수집됩니다. 혼잡도 정보는 향후 업데이트될 예정입니다.
+    </div>
+  </div>
+
+ <script>
+  const now = new Date();
+  document.getElementById("current-time").innerText = now.toLocaleTimeString("ko-KR");
+
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const tbody = document.getElementById("shuttle-table-body");
+
+  fetch("/static/data/shuttle_data.json")
+    .then(response => response.json())
+    .then(data => {
+      Object.entries(data).forEach(([direction, shuttleList]) => {
+        shuttleList.forEach((bus) => {
+          const time = bus.time || bus.remark;  // 둘 중 하나가 시간
+          if (!time) return; // 시간 정보 없으면 건너뜀
+
+          const [hour, min] = time.split(":").map(Number);
+          const totalMinutes = hour * 60 + min;
+          const diff = totalMinutes - nowMinutes;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${direction}</td>
+            <td>${time}</td>
+            <td>${diff >= 0 ? `${diff}분 후` : "출발 완료"}</td>
+            <td>${bus.remark && bus.time ? bus.remark : ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    })
+    .catch(error => {
+      console.error("셔틀 데이터 로딩 실패:", error);
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">셔틀 정보를 불러올 수 없습니다.</td></tr>';
+    });
+</script>
+
+
+  <script src="/static/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
