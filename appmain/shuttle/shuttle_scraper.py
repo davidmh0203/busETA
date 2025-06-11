@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from datetime import datetime
 import os
 
 
@@ -86,6 +85,8 @@ def save_schedule_if_updated(target, save_path):
             print("변경사항 없음. 저장 생략.")
             return
 
-    df.to_json(save_path, orient="records", force_ascii=False, indent=2)
+    df.to_json(save_path, orient="split", force_ascii=False, indent=2)
     print(f"{target} 스케줄 갱신됨 → {save_path}")
 
+save_schedule_if_updated("삼송역", "/Users/iminhyeong/DevMH/busAlert/appmain/static/data/shuttle_samsong.json")
+save_schedule_if_updated("백석역", "/Users/iminhyeong/DevMH/busAlert/appmain/static/data/shuttle_backseck.json")

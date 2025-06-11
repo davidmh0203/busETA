@@ -1,2 +1,4 @@
-# appmain/shuttle/__init__.py
-# 필요 시 셔틀 관련 공용 함수 넣을 수 있음
+from appmain.shuttle.shuttle_scraper import save_schedule_if_updated
+
+save_schedule_if_updated("삼송역", "/static/data/shuttle_samsong.json")
+save_schedule_if_updated("백석역", "/static/data/shuttle_.json")
