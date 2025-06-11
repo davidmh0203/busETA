@@ -1,12 +1,10 @@
-from flask import Blueprint, send_from_directory
-
-from appmain import app
+from flask import Blueprint, render_template
+from appmain.recommend.recommend_data import get_recommendation_summary
 
 main = Blueprint('main', __name__)
 
 @main.route('/')
 @main.route('/home')
 def home():
-    return send_from_directory(app.root_path, 'templates/index.html')
-
-
+    summary = get_recommendation_summary()
+    return render_template('index.html', summary=summary)

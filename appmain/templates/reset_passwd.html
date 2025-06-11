@@ -15,10 +15,13 @@
             </div>
             <div class="col-6">
                 <ul class="nav justify-content-end">
-                    <li class="nav-item"><a class="nav-link" href="/signup">SignUp</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/signin">SignIn</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">SignOut</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/myinfo">MyInfo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/signup" id="signup_link">회원가입</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/signin" id="signin_link">로그인</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="signout_link">로그아웃</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/myinfo" id="myinfo_link">회원정보</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/shuttle">셔틀정보</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/citybus">노선버스정보</a></li>
+                </ul>
                 </ul>
             </div>
         </div>
@@ -51,6 +54,7 @@
     </div>
 </body>
 <script type="text/javascript" src="/static/js/navbar.js"></script>
+
 <script>
     const email = document.querySelector('#email_input');
     const submitButton = document.querySelector('#submit_button');
@@ -83,4 +87,5 @@
     submitButton.addEventListener('click', onSubmitHandler);
     cancelButton.addEventListener('click', onCancelHandler);
 </script>
+
 </html>

@@ -1,79 +1,109 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>셔틀버스 정보 - BusETA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+  <meta charset="UTF-8">
+  <title>▶ 셔틀정보 - 셔틀언제와</title>
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+  <script src="/static/js/bootstrap.bundle.min.js"></script>
+  <style>
+    .table th, .table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+    h4.section-title {
+      margin-top: 40px;
+    }
+  </style>
 </head>
-<body>
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">🚌 셔틀버스 정보</h2>
-
-    <!-- 시간 기준 안내 -->
-    <div class="alert alert-secondary text-center" role="alert">
-      현재 시간: <strong id="current-time"></strong><br />
-      가장 가까운 셔틀을 추천합니다.
+<body class="bg-light">
+<div class="container py-4">
+  <div class="row navbar bg-light align-items-center">
+    <div class="col-6">
+      <a class="nav-link" href="/home"><h4>셔틀언제와</h4></a>
     </div>
-
-    <!-- 셔틀 정보 테이블 -->
-    <table class="table table-striped">
-      <thead class="table-dark">
-        <tr>
-          <th>방향</th>
-          <th>출발 시각</th>
-          <th>출발까지 남은 시간</th>
-          <th>비고</th>
-        </tr>
-      </thead>
-      <tbody id="shuttle-table-body">
-        <!-- JavaScript로 동적 삽입 -->
-      </tbody>
-    </table>
-
-    <!-- 안내 -->
-    <div class="text-muted mt-3">
-      ※ 시간은 매월 학교 공지 기준으로 수집됩니다. 혼잡도 정보는 향후 업데이트될 예정입니다.
+    <div class="col-6">
+      <ul class="nav justify-content-end">
+        <li class="nav-item"><a class="nav-link" href="/signup">회원가입</a></li>
+        <li class="nav-item"><a class="nav-link" href="/signin">로그인</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" id="signout_link">로그아웃</a></li>
+        <li class="nav-item"><a class="nav-link" href="/myinfo">회원정보</a></li>
+        <li class="nav-item"><a class="nav-link" href="/shuttle">셔틀정보</a></li>
+        <li class="nav-item"><a class="nav-link" href="/citybus">노선버스</a></li>
+      </ul>
     </div>
   </div>
 
- <script>
-  const now = new Date();
-  document.getElementById("current-time").innerText = now.toLocaleTimeString("ko-KR");
+  <div class="text-center mt-4">
+    <h2>학교 셔틀 시간표</h2>
+    <p class="text-muted">→ 마지막 업데이트: <strong>2025년 6월 12일 기준</strong></p>
+  </div>
 
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const tbody = document.getElementById("shuttle-table-body");
+  <h4 class="section-title">백석역 셔틀</h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped bg-white">
+      <thead class="table-primary">
+        <tr>
+          <th>등교 (백석역)</th>
+          <th>하교 (캠퍼스)</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody id="baekseokTable">
+        <tr><td colspan="3">데이터 로딩 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-  fetch("/static/data/shuttle_data.json")
-    .then(response => response.json())
+  <h4 class="section-title">삼송역/원흥역 셔틀</h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped bg-white">
+      <thead class="table-success">
+        <tr>
+          <th>등교 - 원흥역</th>
+          <th>등교 - 삼송역</th>
+          <th>등교 - 캠퍼스</th>
+          <th>하교 (캠퍼스)</th>
+          <th>비고</th>
+        </tr>
+      </thead>
+      <tbody id="samsongTable">
+        <tr><td colspan="5">데이터 로딩 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("/api/shuttle")
+    .then(res => res.json())
     .then(data => {
-      Object.entries(data).forEach(([direction, shuttleList]) => {
-        shuttleList.forEach((bus) => {
-          const time = bus.time || bus.remark;  // 둘 중 하나가 시간
-          if (!time) return; // 시간 정보 없으면 건너뜀
+      const baekseok = data.baekseok;
+      const samsong = data.samsong;
 
-          const [hour, min] = time.split(":").map(Number);
-          const totalMinutes = hour * 60 + min;
-          const diff = totalMinutes - nowMinutes;
+      const bTable = document.getElementById("baekseokTable");
+      bTable.innerHTML = "";
+      baekseok.forEach(row => {
+        bTable.innerHTML += `<tr><td>${row.go}</td><td>${row.back}</td><td>${row.note}</td></tr>`;
+      });
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${direction}</td>
-            <td>${time}</td>
-            <td>${diff >= 0 ? `${diff}분 후` : "출발 완료"}</td>
-            <td>${bus.remark && bus.time ? bus.remark : ""}</td>
-          `;
-          tbody.appendChild(tr);
-        });
+      const sTable = document.getElementById("samsongTable");
+      sTable.innerHTML = "";
+      samsong.forEach(row => {
+        sTable.innerHTML += `<tr>
+          <td>${row.wonheung}</td>
+          <td>${row.samsong}</td>
+          <td>${row.campus}</td>
+          <td>${row.back}</td>
+          <td>${row.note}</td>
+        </tr>`;
       });
     })
-    .catch(error => {
-      console.error("셔틀 데이터 로딩 실패:", error);
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">셔틀 정보를 불러올 수 없습니다.</td></tr>';
+    .catch(err => {
+      console.error("로드 실패:", err);
     });
+});
 </script>
-
-
-  <script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/navbar.js"></script>
 </body>
 </html>

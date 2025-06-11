@@ -79,27 +79,33 @@
                 <button class="btn btn-outline-secondary" type="button" id="destination_popup">상세 설정</button>
             </div>
             <div class="mt-2">
-                <button class="btn btn-sm btn-outline-primary">삼송역</button>
-                <button class="btn btn-sm btn-outline-primary">백석역</button>
-                <button class="btn btn-sm btn-outline-primary">화정역</button>
-            </div>
+  <button class="btn btn-sm btn-outline-primary destination-btn" data-target="삼송역">삼송역</button>
+  <button class="btn btn-sm btn-outline-primary destination-btn" data-target="백석역">백석역</button>
+  <button class="btn btn-sm btn-outline-primary destination-btn" data-target="화정역">화정역</button>
+</div>
+
         </div>
 
         <!-- 추천 루트 -->
         <div class="mb-4">
             <div class="section-title">2. 추천 루트</div>
             <div class="card p-3">
-                <p><strong>삼송역 셔틀</strong>을 추천해요! → <span class="highlight-time">12시 30분 출발</span></p>
-                <a href="/recommend" class="btn btn-primary">추천 루트 보기</a>
-            </div>
+    <p class="card-title"><strong>{{ summary.recommended.route }}</strong>을 추천해요! →
+        <span class="highlight-time">{{ summary.recommended.info.time }} 출발</span>
+    </p>
+    <p class="card-text">
+        남은 시간: {{ summary.recommended.info.minutes_left }}분
+    </p>
+    <a href="/recommend" class="btn btn-primary">추천 루트 보기</a>
+</div>
         </div>
 
         <!-- 노선버스 정보 -->
         <div class="mb-4">
             <div class="section-title">3. 노선버스 정보</div>
             <ul class="list-group">
-                <li class="list-group-item">033번: <span class="highlight-bus-time">15분 뒤 도착</span></li>
-                <li class="list-group-item">85번: <span class="highlight-bus-time">8분 뒤 도착</span></li>
+                <li class="list-group-item">033번: <span class="highlight-bus-time">{{ summary.result_033.arriveTime }}</span></li>
+                <li class="list-group-item">85번: <span class="highlight-bus-time">{{ summary.result_85.arriveTime }}</span></li>
             </ul>
             <a href="/routeBus" class="btn btn-primary">노선버스 정보</a>
         </div>
@@ -107,14 +113,46 @@
         <!-- 셔틀 정보 -->
         <div class="mb-4">
             <div class="section-title">4. 셔틀 정보</div>
-            <ul class="list-group">
-                <li class="list-group-item" style="background-color: rgba(13, 110, 253, 0.1);">삼송역: <span style="color: #0d6efd; font-weight: 600;">12시 30분 출발</span> (가장 빠름)</li>
-                <li class="list-group-item">백석역: 11시 30분 출발</li>
-            </ul>
+                <ul class="list-group">
+    <li id="samsong-shuttle" class="list-group-item" style="background-color: rgba(13, 110, 253, 0.1);">
+        삼송역: <span style="color: #0d6efd; font-weight: 600;">{{ summary.summary.samsong.time }} 출발</span>
+        {% if summary.recommended.route == '삼송역 셔틀' %}(가장 빠름){% endif %}
+    </li>
+    <li id="baekseok-shuttle" class="list-group-item">
+        백석역: {{ summary.summary.baekseok.time }} 출발
+        {% if summary.recommended.route == '백석역 셔틀' %}(가장 빠름){% endif %}
+    </li>
+</ul>
+
             <a href="/shuttle" class="btn btn-primary">셔틀 시간표 확인</a>
         </div>
 
     </div>
+
+    <script>
+        document.querySelectorAll('.destination-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const destination = btn.dataset.target;
+
+    fetch(`/api/recommend?dest=${encodeURIComponent(destination)}`)
+      .then(res => res.json())
+      .then(data => {
+        // 추천 카드 업데이트
+        document.querySelector('.card-title').innerText = data.recommend.route + " 탑승";
+        document.querySelector('.card-text').innerHTML = `
+          ${data.recommend.info.time} 출발<br />
+          남은 시간: ${data.recommend.info.minutes_left}분
+        `;
+
+        // 셔틀 정보 업데이트
+        document.querySelector("#samsong-shuttle").innerText =
+          `삼송역: ${data.summary.samsong.time || '-'} 출발`;
+        document.querySelector("#baekseok-shuttle").innerText =
+          `백석역: ${data.summary.baekseok.time || '-'} 출발${data.recommend.route === "백석역 셔틀" ? " (가장 빠름)" : ""}`;
+      });
+  });
+});
+    </script>
 
     <script src="/static/js/bootstrap.bundle.min.js"></script>
     <script src="/static/js/navbar.js"></script>

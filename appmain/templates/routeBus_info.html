@@ -1,61 +1,161 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>노선버스 정보 - BusETA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+    <meta charset="UTF-8">
+    <title>📍 실시간 버스 도착 알림</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .table td, .table th {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
 </head>
-<body>
-  <div class="container mt-5">
-    <h2 class="mb-4 text-center">🚌 노선버스 도착 정보</h2>
-
-    <!-- 기본 버스 정보 -->
-    <div class="mb-4">
-      <h4>자주 이용하는 버스</h4>
-      <ul class="list-group">
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          033번 버스
-          <span class="badge bg-primary rounded-pill">도착까지 5분</span>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          85번 버스
-          <span class="badge bg-success rounded-pill">도착까지 7분</span>
-        </li>
-      </ul>
+<body class="bg-light">
+    <div class="container">
+        <div class="row navbar bg-light align-items-center">
+            <div class="col-6">
+                <a class="nav-link" href="/home"><h4>셔틀언제와</h4></a>
+            </div>
+            <div class="col-6">
+                <ul class="nav justify-content-end">
+                    <li class="nav-item"><a class="nav-link" href="/signup" id="signup_link">회원가입</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/signin" id="signin_link">로그인</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" id="signout_link">로그아웃</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/myinfo" id="myinfo_link">회원정보</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/shuttle">셔틀정보</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/citybus">노선버스정보</a></li>
+                </ul>
+                </ul>
+            </div>
+        </div>
     </div>
 
-    <!-- 사용자 설정 버스 -->
-    <div class="mb-4">
-      <h4>내가 설정한 버스</h4>
-      <ul class="list-group" id="user-bus-list">
-        <!-- 여기에 JavaScript로 동적 추가 -->
-      </ul>
+
+    <div class="container py-5">
+        <h2 class="text-center mb-3">🚌 중부대학교 실시간 버스 도착 정보</h2>
+
+        <!-- 🔄 새로고침 버튼 및 상태 -->
+        <div class="text-center mb-3">
+            <button id="refreshBtn" class="btn btn-primary">
+                🔄 수동 새로고침
+            </button>
+            <span id="refreshingSpinner" class="ms-2 text-primary" style="display:none;">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                로딩 중...
+            </span>
+        </div>
+
+        <div class="text-center mb-3 text-muted" id="update-status">
+            ⏱ 30초마다 자동 갱신 중...<br>
+            🕒 마지막 갱신: <span id="last-updated">-</span>
+        </div>
+
+        <!-- 📋 테이블 -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover bg-white shadow">
+                <thead class="table-primary">
+                    <tr>
+                        <th>버스 번호</th>
+                        <th>정류장</th>
+                        <th>도착까지 남은 시간</th>
+                        <th>버스 위치</th>
+                        <th>남은 좌석</th>
+                    </tr>
+                </thead>
+                <tbody id="busTable">
+                    <tr><td colspan="5">데이터 불러오는 중...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- 추가 입력 폼 -->
-    <div class="mb-3">
-      <label for="busInput" class="form-label">버스 번호 추가</label>
-      <input type="text" class="form-control" id="busInput" placeholder="예: 600, 773">
-      <button class="btn btn-outline-primary mt-2" onclick="addBus()">추가</button>
-    </div>
-  </div>
+    <script>
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const formatted = now.toLocaleTimeString('ko-KR', { hour12: false });
+            document.getElementById('last-updated').textContent = formatted;
+        }
 
-  <script src="/static/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // 예시: 사용자 버스 동적 추가
-    function addBus() {
-      const input = document.getElementById("busInput");
-      const busNum = input.value.trim();
-      if (busNum) {
-        const list = document.getElementById("user-bus-list");
-        const li = document.createElement("li");
-        li.className = "list-group-item d-flex justify-content-between align-items-center";
-        li.innerHTML = `${busNum}번 버스 <span class="badge bg-secondary rounded-pill">정보 불러오는 중</span>`;
-        list.appendChild(li);
-        input.value = "";
-      }
-    }
-  </script>
+        function updateBusTable(data) {
+            const table = document.getElementById("busTable");
+            table.innerHTML = "";
+
+            const buses = [
+                { name: "033", data: data.result_033 },
+                { name: "85", data: data.result_85 }
+            ];
+
+            buses.forEach(bus => {
+                const row = document.createElement("tr");
+
+                if (!bus.data || bus.data.message) {
+                    row.innerHTML = `
+                        <td>${bus.name}</td>
+                        <td>-</td>
+                        <td>도착 정보 없음</td>
+                        <td>-</td>
+                        <td>-</td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td>${bus.data.bus}</td>
+                        <td>${bus.data.station}</td>
+                        <td>${bus.data.time}분</td>
+                        <td>${bus.data.info["버스위치"] || "-"}</td>
+                        <td>${bus.data.info["남은좌석"] || "-"}</td>
+                    `;
+                }
+
+                table.appendChild(row);
+            });
+        }
+
+        function fetchAndUpdate(startedByUser = false) {
+            if (startedByUser) {
+                const btn = document.getElementById("refreshBtn");
+                const spinner = document.getElementById("refreshingSpinner");
+                btn.disabled = true;
+                btn.innerHTML = "🔄 갱신 중...";
+                spinner.style.display = "inline-block";
+            }
+
+            fetch("/api/arrival")
+                .then(response => response.json())
+                .then(data => {
+                    updateBusTable(data);
+                    updateLastUpdatedTime();
+                })
+                .catch(error => {
+                    console.error("에러 발생:", error);
+                    document.getElementById("busTable").innerHTML = "<tr><td colspan='5'>데이터를 불러오는 데 실패했습니다.</td></tr>";
+                })
+                .finally(() => {
+                    if (startedByUser) {
+                        const btn = document.getElementById("refreshBtn");
+                        const spinner = document.getElementById("refreshingSpinner");
+                        btn.disabled = false;
+                        btn.innerHTML = "🔄 수동 새로고침";
+                        spinner.style.display = "none";
+                    }
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchAndUpdate();
+            setInterval(fetchAndUpdate, 30000); // 자동 갱신
+            document.getElementById("refreshBtn").addEventListener("click", function () {
+                fetchAndUpdate(true); // 수동 새로고침
+            });
+        });
+    </script>
+  <script src="/static/js/navbar.js"></script>
+
+
 </body>
 </html>
