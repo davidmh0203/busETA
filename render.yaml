@@ -3,7 +3,7 @@ services:
     name: buseta
     env: python
     buildCommand: ""
-    startCommand: "gunicorn app:app"
+    startCommand: "gunicorn run:app"
     envVars:
       - key: FLASK_ENV
         value: production
