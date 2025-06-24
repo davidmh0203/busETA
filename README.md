@@ -37,3 +37,5 @@
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+
+웹페이지 배포 예정
